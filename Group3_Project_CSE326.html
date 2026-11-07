@@ -1,0 +1,847 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fashion Design Approval Workflow</title>
+    <style>
+        :root {
+            --bg-color: #f7f9fa;
+            --main-dark: #222831;
+            --card-bg: #ffffff;
+            --border-color: #d1d5db;
+            --danger: #d90429;
+            --btn-hover: #393e46;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            background-image: url(https://i.pinimg.com/originals/8f/16/6e/8f166ee7743f0a59ff29e1ae5d6374fd.gif);
+            color: #333333;
+        }
+
+        header {
+            background-image: url(https://i.pinimg.com/originals/87/a1/d8/87a1d82fb5bc9d1e9baee8d72739b656.gif);
+            color: #ffffff;
+            padding: 25px 15px;
+            text-align: center;
+        }
+
+        header h1 {
+            margin: 0 0 8px 0;
+            font-size: 28px;
+        }
+
+        header p {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        main {
+            max-width: 900px;
+            margin: 25px auto;
+            background: var(--card-bg);
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+        }
+
+        .step-tabs {
+            display: flex;
+            justify-content: space-between;
+            gap: 6px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .step-tab {
+            flex: 1;
+            min-width: 100px;
+            text-align: center;
+            padding: 10px;
+            background: #e5e7eb;
+            font-size: 13px;
+            font-weight: bold;
+            border-radius: 4px;
+            transition: background 0.2s ease;
+        }
+
+        .step-tab.current-step {
+            background: var(--main-dark);
+            color: #ffffff;
+        }
+
+        .step-page {
+            display: none;
+        }
+
+        .step-page.current-page {
+            display: block;
+        }
+
+        h2 {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            margin-top: 0;
+        }
+
+        label {
+            display: block;
+            margin-top: 14px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        input[type="text"],
+        input[type="date"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 6px;
+            box-sizing: border-box;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        textarea {
+            resize: vertical;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 18px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 18px;
+            background: var(--main-dark);
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s ease;
+        }
+
+        button:hover {
+            background: var(--btn-hover);
+        }
+
+        .delete-btn {
+            background: var(--danger);
+        }
+
+        .delete-btn:hover {
+            background: #a3001e;
+        }
+
+        .manager-box {
+            background: #f3f4f6;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .nav-controls {
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid var(--border-color);
+            margin-top: 25px;
+            padding-top: 15px;
+        }
+
+        .info-box {
+            padding: 10px;
+            background: #eef2f6;
+            margin-top: 14px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .log-entry {
+            border-left: 4px solid var(--main-dark);
+            padding: 8px 12px;
+            margin: 12px 0;
+            background: #f9fafb;
+        }
+
+        .log-entry h3 {
+            margin: 0 0 4px 0;
+            font-size: 15px;
+        }
+
+        .log-entry p {
+            margin: 0;
+            font-size: 14px;
+        }
+
+        .log-entry span {
+            font-size: 12px;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Fashion Design Approval Workflow</h1>
+    <p>Manage Projects, Designs, Revisions and Approvals</p>
+</header>
+
+<main>
+    <nav class="step-tabs">
+        <div class="step-tab current-step" id="tab0">1. Project</div>
+        <div class="step-tab" id="tab1">2. Sketch</div>
+        <div class="step-tab" id="tab2">3. Fabric</div>
+        <div class="step-tab" id="tab3">4. Revision</div>
+        <div class="step-tab" id="tab4">5. Comments</div>
+        <div class="step-tab" id="tab5">6. Approval</div>
+        <div class="step-tab" id="tab6">7. History</div>
+    </nav>
+
+    <section class="step-page current-page" id="page0">
+        <h2>Step 1: Choose or Make Project</h2>
+
+        <div class="manager-box">
+            <label for="projectSelector">Select Project</label>
+            <select id="projectSelector" onchange="pickExistingProject()">
+                <option value="">-- Choose a project --</option>
+            </select>
+
+            <div class="btn-group">
+                <button type="button" class="delete-btn" id="removeProjectBtn" onclick="deleteCurrentProject()" style="display: none;">Delete Project</button>
+            </div>
+        </div>
+
+        <label for="projectNameInput">Project Name</label>
+        <input type="text" id="projectNameInput" placeholder="Enter project name">
+
+        <label for="designerNameInput">Designer Name</label>
+        <input type="text" id="designerNameInput" placeholder="Enter designer name">
+
+        <label for="clientNameInput">Client Name</label>
+        <input type="text" id="clientNameInput" placeholder="Enter client name">
+
+        <label for="deadlineInput">Project Deadline</label>
+        <input type="date" id="deadlineInput">
+
+        <div class="btn-group">
+            <button type="button" onclick="createNewProject()">Create Project</button>
+            <button type="button" onclick="saveProjectDetails()">Save Changes</button>
+        </div>
+
+        <div id="projectStatusArea" class="info-box">No project selected.</div>
+    </section>
+
+    <section class="step-page" id="page1">
+        <h2>Step 2: Upload Design Sketch</h2>
+
+        <label for="sketchNameInput">Design Name</label>
+        <input type="text" id="sketchNameInput" placeholder="Enter design name">
+
+        <label for="sketchNameTagInput">Sketch File Name</label>
+        <input type="text" id="sketchNameTagInput" placeholder="e.g. summer_gown_sketch.png">
+
+        <label for="sketchDescInput">Design Description</label>
+        <textarea id="sketchDescInput" rows="3" placeholder="Describe your design"></textarea>
+
+        <button type="button" onclick="saveSketchInfo()">Save Sketch</button>
+        <div id="sketchStatusArea" class="info-box">No sketch details saved.</div>
+    </section>
+
+    <section class="step-page" id="page2">
+        <h2>Step 3: Fabric Selection</h2>
+
+        <label for="fabricTypeSelect">Select Fabric</label>
+        <select id="fabricTypeSelect">
+            <option value="">Select Fabric</option>
+            <option value="Cotton">Cotton</option>
+            <option value="Silk">Silk</option>
+            <option value="Linen">Linen</option>
+            <option value="Denim">Denim</option>
+            <option value="Wool">Wool</option>
+            <option value="Polyester">Polyester</option>
+        </select>
+
+        <label for="fabricColorInput">Fabric Colour</label>
+        <input type="text" id="fabricColorInput" placeholder="Enter fabric colour">
+
+        <label for="fabricNotesInput">Fabric Details</label>
+        <textarea id="fabricNotesInput" rows="3" placeholder="Enter fabric details"></textarea>
+
+        <button type="button" onclick="saveFabricInfo()">Save Fabric</button>
+        <div id="fabricStatusArea" class="info-box">No fabric saved.</div>
+    </section>
+
+    <section class="step-page" id="page3">
+        <h2>Step 4: Design Revisions</h2>
+
+        <label for="revisionTextInput">Revision Details</label>
+        <textarea id="revisionTextInput" rows="3" placeholder="Describe design changes"></textarea>
+
+        <label for="revisionFileTagInput">Revised Sketch File Name</label>
+        <input type="text" id="revisionFileTagInput" placeholder="e.g. revision_v2.png">
+
+        <button type="button" onclick="addRevisionEntry()">Submit Revision</button>
+        <div id="revisionListArea" class="info-box">No revisions added yet.</div>
+    </section>
+
+    <section class="step-page" id="page4">
+        <h2>Step 5: Comments and Feedback</h2>
+
+        <label for="commentAuthorInput">Comment By</label>
+        <input type="text" id="commentAuthorInput" placeholder="Enter your name">
+
+        <label for="commentTextInput">Comment</label>
+        <textarea id="commentTextInput" rows="3" placeholder="Write your feedback"></textarea>
+
+        <button type="button" onclick="addCommentEntry()">Add Comment</button>
+        <div id="commentListArea" class="info-box">No comments posted yet.</div>
+    </section>
+
+    <section class="step-page" id="page5">
+        <h2>Step 6: Design Approval</h2>
+
+        <label for="stageSelect">Approval Stage</label>
+        <select id="stageSelect">
+            <option value="Sketch Review">Sketch Review</option>
+            <option value="Fabric Selection">Fabric Selection</option>
+            <option value="Sample Review">Sample Review</option>
+            <option value="Final Approval">Final Approval</option>
+        </select>
+
+        <label for="statusSelect">Approval Status</label>
+        <select id="statusSelect">
+            <option value="Pending">Pending</option>
+            <option value="Approved">Approved</option>
+            <option value="Changes Required">Changes Required</option>
+            <option value="Rejected">Rejected</option>
+        </select>
+
+        <label for="approverNameInput">Approver Name</label>
+        <input type="text" id="approverNameInput" placeholder="Enter approver name">
+
+        <button type="button" onclick="saveApprovalVerdict()">Update Approval</button>
+        <div id="approvalStatusArea" class="info-box">Status: Pending</div>
+    </section>
+
+    <section class="step-page" id="page6">
+        <h2>Step 7: Version History</h2>
+        <p>All project updates and actions appear here.</p>
+        <div id="historyLogsArea">No updates recorded yet.</div>
+    </section>
+
+    <div class="nav-controls">
+        <button type="button" id="backStepBtn" onclick="navigateStep(-1)">Previous</button>
+        <button type="button" id="nextStepBtn" onclick="navigateStep(1)">Next</button>
+    </div>
+</main>
+
+<script>
+var currentStepIndex = 0;
+var projectList = [];
+var activeProjectIndex = -1;
+
+function getActiveProject() {
+    if (activeProjectIndex >= 0 && activeProjectIndex < projectList.length) {
+        return projectList[activeProjectIndex];
+    }
+    return null;
+}
+
+function updateDropdownMenu() {
+    var menu = document.getElementById("projectSelector");
+    menu.length = 1;
+
+    var i = 0;
+    while (i < projectList.length) {
+        var opt = document.createElement("option");
+        opt.value = String(i);
+        opt.text = projectList[i].name;
+        if (i === activeProjectIndex) {
+            opt.selected = true;
+        }
+        menu.appendChild(opt);
+        i = i + 1;
+    }
+
+    var trashBtn = document.getElementById("removeProjectBtn");
+    if (activeProjectIndex !== -1) {
+        trashBtn.style.display = "inline-block";
+    } else {
+        trashBtn.style.display = "none";
+    }
+}
+
+function clearAllForms() {
+    document.getElementById("projectNameInput").value = "";
+    document.getElementById("designerNameInput").value = "";
+    document.getElementById("clientNameInput").value = "";
+    document.getElementById("deadlineInput").value = "";
+    document.getElementById("projectStatusArea").innerHTML = "No project selected.";
+
+    document.getElementById("sketchNameInput").value = "";
+    document.getElementById("sketchNameTagInput").value = "";
+    document.getElementById("sketchDescInput").value = "";
+    document.getElementById("sketchStatusArea").innerHTML = "No sketch details saved.";
+
+    document.getElementById("fabricTypeSelect").value = "";
+    document.getElementById("fabricColorInput").value = "";
+    document.getElementById("fabricNotesInput").value = "";
+    document.getElementById("fabricStatusArea").innerHTML = "No fabric saved.";
+
+    document.getElementById("revisionTextInput").value = "";
+    document.getElementById("revisionFileTagInput").value = "";
+    document.getElementById("revisionListArea").innerHTML = "No revisions added yet.";
+
+    document.getElementById("commentAuthorInput").value = "";
+    document.getElementById("commentTextInput").value = "";
+    document.getElementById("commentListArea").innerHTML = "No comments posted yet.";
+
+    document.getElementById("stageSelect").value = "Sketch Review";
+    document.getElementById("statusSelect").value = "Pending";
+    document.getElementById("approverNameInput").value = "";
+    document.getElementById("approvalStatusArea").innerHTML = "Status: Pending";
+
+    document.getElementById("historyLogsArea").innerHTML = "No updates recorded yet.";
+}
+
+function loadActiveProjectData() {
+    var item = getActiveProject();
+    if (!item) {
+        clearAllForms();
+        updateDropdownMenu();
+        refreshStepView();
+        return;
+    }
+
+    document.getElementById("projectNameInput").value = item.name;
+    document.getElementById("designerNameInput").value = item.designer;
+    document.getElementById("clientNameInput").value = item.client;
+    document.getElementById("deadlineInput").value = item.deadline;
+    document.getElementById("projectStatusArea").innerHTML = "Active Project: " + item.name;
+
+    document.getElementById("sketchNameInput").value = item.sketchTitle;
+    document.getElementById("sketchNameTagInput").value = item.sketchFile;
+    document.getElementById("sketchDescInput").value = item.sketchDescription;
+    if (item.sketchTitle.length > 0) {
+        document.getElementById("sketchStatusArea").innerHTML = "Design: " + item.sketchTitle + " (" + item.sketchFile + ")";
+    } else {
+        document.getElementById("sketchStatusArea").innerHTML = "No sketch details saved.";
+    }
+
+    document.getElementById("fabricTypeSelect").value = item.fabricType;
+    document.getElementById("fabricColorInput").value = item.fabricColor;
+    document.getElementById("fabricNotesInput").value = item.fabricNotes;
+    if (item.fabricType.length > 0) {
+        document.getElementById("fabricStatusArea").innerHTML = "Fabric: " + item.fabricType + ", Color: " + item.fabricColor;
+    } else {
+        document.getElementById("fabricStatusArea").innerHTML = "No fabric saved.";
+    }
+
+    document.getElementById("stageSelect").value = item.approvalStage;
+    document.getElementById("statusSelect").value = item.approvalStatus;
+    document.getElementById("approverNameInput").value = item.approverName;
+    document.getElementById("approvalStatusArea").innerHTML = "Status: " + item.approvalStatus + " by " + (item.approverName ? item.approverName : "Unassigned");
+
+    renderRevisions();
+    renderComments();
+    renderHistory();
+    updateDropdownMenu();
+    refreshStepView();
+}
+
+function createNewProject() {
+    var name = document.getElementById("projectNameInput").value;
+    var designer = document.getElementById("designerNameInput").value;
+    var client = document.getElementById("clientNameInput").value;
+    var deadline = document.getElementById("deadlineInput").value;
+
+    name = name.trim();
+    designer = designer.trim();
+    client = client.trim();
+
+    if (name.length === 0 || designer.length === 0 || client.length === 0 || deadline.length === 0) {
+        alert("Please enter all project fields.");
+        return;
+    }
+
+    var projectObj = {
+        name: name,
+        designer: designer,
+        client: client,
+        deadline: deadline,
+        sketchTitle: "",
+        sketchFile: "",
+        sketchDescription: "",
+        fabricType: "",
+        fabricColor: "",
+        fabricNotes: "",
+        approvalStage: "Sketch Review",
+        approvalStatus: "Pending",
+        approverName: "",
+        revisions: [],
+        comments: [],
+        history: []
+    };
+
+    projectObj.history.push({
+        action: "Project Created",
+        note: name + " started by " + designer
+    });
+
+    projectList.push(projectObj);
+    activeProjectIndex = projectList.length - 1;
+
+    loadActiveProjectData();
+    alert("Project created!");
+}
+
+function pickExistingProject() {
+    var menu = document.getElementById("projectSelector");
+    var chosen = menu.value;
+    if (chosen === "") {
+        activeProjectIndex = -1;
+        clearAllForms();
+        updateDropdownMenu();
+        refreshStepView();
+    } else {
+        activeProjectIndex = Number(chosen);
+        loadActiveProjectData();
+    }
+}
+
+function saveProjectDetails() {
+    var item = getActiveProject();
+    if (!item) {
+        alert("Pick or make a project first.");
+        return;
+    }
+
+    var name = document.getElementById("projectNameInput").value.trim();
+    var designer = document.getElementById("designerNameInput").value.trim();
+    var client = document.getElementById("clientNameInput").value.trim();
+    var deadline = document.getElementById("deadlineInput").value;
+
+    if (name.length === 0 || designer.length === 0 || client.length === 0 || deadline.length === 0) {
+        alert("Please fill all project details.");
+        return;
+    }
+
+    item.name = name;
+    item.designer = designer;
+    item.client = client;
+    item.deadline = deadline;
+
+    item.history.push({
+        action: "Project Info Updated",
+        note: "Updated details for " + name
+    });
+
+    loadActiveProjectData();
+    alert("Project details saved!");
+}
+
+function deleteCurrentProject() {
+    if (activeProjectIndex < 0 || activeProjectIndex >= projectList.length) {
+        alert("Choose a project to delete.");
+        return;
+    }
+
+    var item = projectList[activeProjectIndex];
+    var doDelete = confirm("Do you want to delete '" + item.name + "'?");
+    if (!doDelete) {
+        return;
+    }
+
+    projectList.splice(activeProjectIndex, 1);
+    if (projectList.length > 0) {
+        activeProjectIndex = 0;
+    } else {
+        activeProjectIndex = -1;
+    }
+
+    loadActiveProjectData();
+    alert("Project deleted.");
+}
+
+function saveSketchInfo() {
+    var item = getActiveProject();
+    if (!item) {
+        alert("Pick or make a project first.");
+        return;
+    }
+
+    var title = document.getElementById("sketchNameInput").value.trim();
+    var fileTag = document.getElementById("sketchNameTagInput").value.trim();
+    var desc = document.getElementById("sketchDescInput").value.trim();
+
+    if (title.length === 0 || desc.length === 0) {
+        alert("Enter design name and description.");
+        return;
+    }
+
+    item.sketchTitle = title;
+    item.sketchFile = fileTag;
+    item.sketchDescription = desc;
+
+    item.history.push({
+        action: "Design Sketch Saved",
+        note: title
+    });
+
+    document.getElementById("sketchStatusArea").innerHTML = "Design: " + title + " (" + fileTag + ")";
+    renderHistory();
+    alert("Sketch details saved.");
+}
+
+function saveFabricInfo() {
+    var item = getActiveProject();
+    if (!item) {
+        alert("Pick or make a project first.");
+        return;
+    }
+
+    var cloth = document.getElementById("fabricTypeSelect").value;
+    var color = document.getElementById("fabricColorInput").value.trim();
+    var notes = document.getElementById("fabricNotesInput").value.trim();
+
+    if (cloth.length === 0 || color.length === 0) {
+        alert("Select fabric and color.");
+        return;
+    }
+
+    item.fabricType = cloth;
+    item.fabricColor = color;
+    item.fabricNotes = notes;
+
+    item.history.push({
+        action: "Fabric Details Updated",
+        note: cloth + " - " + color
+    });
+
+    document.getElementById("fabricStatusArea").innerHTML = "Fabric: " + cloth + ", Color: " + color;
+    renderHistory();
+    alert("Fabric details saved.");
+}
+
+function addRevisionEntry() {
+    var item = getActiveProject();
+    if (!item) {
+        alert("Pick or make a project first.");
+        return;
+    }
+
+    var notes = document.getElementById("revisionTextInput").value.trim();
+    var fileTag = document.getElementById("revisionFileTagInput").value.trim();
+
+    if (notes.length === 0) {
+        alert("Enter revision details.");
+        return;
+    }
+
+    item.revisions.push({
+        notes: notes,
+        fileTag: fileTag.length > 0 ? fileTag : "No file given"
+    });
+
+    item.history.push({
+        action: "Revision Added",
+        note: notes
+    });
+
+    document.getElementById("revisionTextInput").value = "";
+    document.getElementById("revisionFileTagInput").value = "";
+
+    renderRevisions();
+    renderHistory();
+}
+
+function renderRevisions() {
+    var item = getActiveProject();
+    var area = document.getElementById("revisionListArea");
+
+    if (!item || item.revisions.length === 0) {
+        area.innerHTML = "No revisions added yet.";
+        return;
+    }
+
+    var output = "";
+    var i = 0;
+    while (i < item.revisions.length) {
+        var r = item.revisions[i];
+        output = output + "<p><b>Rev " + (i + 1) + ":</b> " + r.notes + " <i>(" + r.fileTag + ")</i></p>";
+        i = i + 1;
+    }
+    area.innerHTML = output;
+}
+
+function addCommentEntry() {
+    var item = getActiveProject();
+    if (!item) {
+        alert("Pick or make a project first.");
+        return;
+    }
+
+    var author = document.getElementById("commentAuthorInput").value.trim();
+    var text = document.getElementById("commentTextInput").value.trim();
+
+    if (author.length === 0 || text.length === 0) {
+        alert("Enter your name and comment.");
+        return;
+    }
+
+    item.comments.push({
+        author: author,
+        text: text
+    });
+
+    item.history.push({
+        action: "New Comment Added",
+        note: author + ": " + text
+    });
+
+    document.getElementById("commentAuthorInput").value = "";
+    document.getElementById("commentTextInput").value = "";
+
+    renderComments();
+    renderHistory();
+}
+
+function renderComments() {
+    var item = getActiveProject();
+    var area = document.getElementById("commentListArea");
+
+    if (!item || item.comments.length === 0) {
+        area.innerHTML = "No comments posted yet.";
+        return;
+    }
+
+    var output = "";
+    var i = 0;
+    while (i < item.comments.length) {
+        var c = item.comments[i];
+        output = output + "<p><b>" + c.author + ":</b> " + c.text + "</p>";
+        i = i + 1;
+    }
+    area.innerHTML = output;
+}
+
+function saveApprovalVerdict() {
+    var item = getActiveProject();
+    if (!item) {
+        alert("Pick or make a project first.");
+        return;
+    }
+
+    var stage = document.getElementById("stageSelect").value;
+    var status = document.getElementById("statusSelect").value;
+    var approver = document.getElementById("approverNameInput").value.trim();
+
+    if (approver.length === 0) {
+        alert("Enter approver name.");
+        return;
+    }
+
+    item.approvalStage = stage;
+    item.approvalStatus = status;
+    item.approverName = approver;
+
+    item.history.push({
+        action: "Approval Updated",
+        note: stage + " marked as " + status + " by " + approver
+    });
+
+    document.getElementById("approvalStatusArea").innerHTML = "Status: " + status + " by " + approver;
+    renderHistory();
+    alert("Approval updated.");
+}
+
+function renderHistory() {
+    var item = getActiveProject();
+    var area = document.getElementById("historyLogsArea");
+
+    if (!item || item.history.length === 0) {
+        area.innerHTML = "No updates recorded yet.";
+        return;
+    }
+
+    var output = "";
+    var i = 0;
+    while (i < item.history.length) {
+        var h = item.history[i];
+        output = output + "<div class='log-entry'>";
+        output = output + "<h3>Entry " + (i + 1) + ": " + h.action + "</h3>";
+        output = output + "<p>" + h.note + "</p>";
+        output = output + "</div>";
+        i = i + 1;
+    }
+    area.innerHTML = output;
+}
+
+function navigateStep(direction) {
+    if (direction === 1) {
+        if (currentStepIndex === 0 && !getActiveProject()) {
+            alert("Pick or create a project first.");
+            return;
+        }
+        if (currentStepIndex === 6) {
+            return;
+        }
+    }
+
+    currentStepIndex = currentStepIndex + direction;
+    if (currentStepIndex < 0) {
+        currentStepIndex = 0;
+    }
+    if (currentStepIndex > 6) {
+        currentStepIndex = 6;
+    }
+
+    refreshStepView();
+}
+
+function refreshStepView() {
+    var i = 0;
+    while (i <= 6) {
+        var page = document.getElementById("page" + i);
+        var tab = document.getElementById("tab" + i);
+
+        if (i === currentStepIndex) {
+            page.className = "step-page current-page";
+            tab.className = "step-tab current-step";
+        } else {
+            page.className = "step-page";
+            tab.className = "step-tab";
+        }
+        i = i + 1;
+    }
+
+    var backBtn = document.getElementById("backStepBtn");
+    var nextBtn = document.getElementById("nextStepBtn");
+
+    if (currentStepIndex === 0) {
+        backBtn.style.display = "none";
+    } else {
+        backBtn.style.display = "inline-block";
+    }
+
+    if (currentStepIndex === 6) {
+        nextBtn.style.display = "none";
+    } else {
+        nextBtn.style.display = "inline-block";
+    }
+}
+
+updateDropdownMenu();
+refreshStepView();
+</script>
+
+</body>
+</html>
